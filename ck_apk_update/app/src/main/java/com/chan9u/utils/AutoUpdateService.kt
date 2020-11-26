@@ -182,6 +182,26 @@ class AutoUpdateService: Service() {
         }
     }
 
+    // adb install
+    private fun adbInstall(apkName: String) {
+        // 슈퍼 유저 받기 앱 자체에서 불가
+        // Caused by: java.io.IOException: Cannot run program "su": error=13, Permission denied
+        //
+//        Runtime.getRuntime().exec("su")
+
+        try {
+            // 루틴된 폰에서 테스트 가능한지 네이버 앱 스킴 호출 (네이버 앱 존재시)
+//            Runtime.getRuntime().exec("adb shell am start -a android.intent.action.VIEW -d naversearchapp://host")
+
+            // adb install 을 이용하여 루틴된 폰에서 다운  'adb install apk파일경로'
+            Runtime.getRuntime().exec("adb install ${apkName}")
+
+        } catch (e: Exception) {
+            Log.d("@@@@@@@@@@ adbInstall", e.message)
+        }
+
+    }
+
     private fun installPackage(apkName: String){
         try {
             val apkFile = File(
