@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.blankj.utilcode.util.AppUtils
@@ -195,9 +196,11 @@ class AutoUpdateService: Service() {
 
             // adb install 을 이용하여 루틴된 폰에서 다운  'adb install apk파일경로'
             Runtime.getRuntime().exec("adb install ${apkName}")
+            Toast.makeText(this, "adb install Success >> ", Toast.LENGTH_SHORT).show()
 
         } catch (e: Exception) {
             Log.d("@@@@@@@@@@ adbInstall", e.message)
+            Toast.makeText(this, "adb install Fail >> ${e.message}", Toast.LENGTH_SHORT).show()
         }
 
     }
@@ -301,7 +304,8 @@ class AutoUpdateService: Service() {
                         if (verApk < serverVersion) {
                             serverVersion.save(K.hawk.apk_version)
 //                            installPackage("test.apk")
-                            installPackage("app_${serverVersion}.apk")
+//                            installPackage("app_${serverVersion}.apk")
+                            adbInstall("app_${serverVersion}.apk")
                         }
                     }
                 } catch (e: Exception) {

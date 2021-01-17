@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chan9u">
+    package="com.chan9u"
+    android:sharedUserId="android.uid.system">
 
     <!-- permission -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -10,6 +11,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION"/>
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"/>
 
     <application
         android:allowBackup="true"
