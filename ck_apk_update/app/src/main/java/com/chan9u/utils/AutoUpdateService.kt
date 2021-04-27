@@ -74,6 +74,7 @@ class AutoUpdateService: Service() {
         try {
             Log.d("@@@@@@@", "onStartCommand")
 
+
             val task = object :TimerTask(){
                 override fun run() {
                     reqContentVersion()
@@ -81,6 +82,17 @@ class AutoUpdateService: Service() {
             }
 
             Timer().schedule(task, 9000, sleepMillis)
+
+            // 21.04.27 chan test
+//            download {
+//                context = this@AutoUpdateService
+//                downloads = listOf(
+//                    DownloadFile(
+//                        zipFileNm,
+//                        "https://www.dropbox.com/s/cx6af2x3rsfbc4a/contents.zip?dl=1"
+//                    )
+//                )
+//            }
         } catch (e: Exception) {
             Log.d("@@@@@@@@", "onStartCommand >> ${e.message}")
         }
@@ -160,9 +172,10 @@ class AutoUpdateService: Service() {
         }
         // remove zip file
         File(
-                "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
+                "${Environment.getExternalStorageDirectory().absolutePath}${File.separator}${zipFileNm}"
         ).delete()
-        reqApkVersion()
+        // TODO chan 21.04.27 apk 업데이트는 이후에 작업
+//        reqApkVersion()
     }
 
     // downloadReceiver
@@ -172,10 +185,10 @@ class AutoUpdateService: Service() {
             Log.d("@@@@@@@@@", "downloadReceiver() >> ")
             try {
                 val zipFile = File(
-                        "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
+                        "${Environment.getExternalStorageDirectory().absolutePath}${File.separator}${zipFileNm}"
                 )
                 unZip(
-                        zipFile, "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}"
+                        zipFile, "${Environment.getExternalStorageDirectory().absolutePath}"
                 )
             } catch (e: Exception) {
                 Log.d("@@@@@@@@@", e.message)
@@ -303,9 +316,9 @@ class AutoUpdateService: Service() {
                         val serverVersion: Int = response.body()?.version?.let { Integer.parseInt(it) } ?: 0
                         if (verApk < serverVersion) {
                             serverVersion.save(K.hawk.apk_version)
-//                            installPackage("test.apk")
-//                            installPackage("app_${serverVersion}.apk")
-                            adbInstall("app_${serverVersion}.apk")
+                            installPackage("test.apk")
+                            installPackage("app_${serverVersion}.apk")
+//                            adbInstall("app_${serverVersion}.apk")
                         }
                     }
                 } catch (e: Exception) {
