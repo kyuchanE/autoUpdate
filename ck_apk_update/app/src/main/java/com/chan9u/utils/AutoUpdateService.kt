@@ -23,6 +23,7 @@ import com.chan9u.model.K
 import com.chan9u.model.VersionDto
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -74,14 +75,15 @@ class AutoUpdateService: Service() {
         try {
             Log.d("@@@@@@@", "onStartCommand")
 
+            reqUploadVer()
 
-            val task = object :TimerTask(){
-                override fun run() {
-                    reqContentVersion()
-                }
-            }
-
-            Timer().schedule(task, 9000, sleepMillis)
+//            val task = object :TimerTask(){
+//                override fun run() {
+//                    reqContentVersion()
+//                }
+//            }
+//
+//            Timer().schedule(task, 9000, sleepMillis)
 
             // 21.04.27 chan test
 //            download {
@@ -263,6 +265,21 @@ class AutoUpdateService: Service() {
         fis.copyTo(out)
         session.fsync(out)
         out.close()
+    }
+
+    private fun reqUploadVer() {
+        setRetrofit()
+        retrofitService.reqUploadInfo().enqueue(object : Callback<JsonObject> {
+
+            override fun onResponse(call: Call<JsonObject>, response: Response<JsonObject>) {
+                Log.d("@@@@@@@@ ", "reqUploadVer onResponse >> ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                Log.d("@@@@@@@@ ", "reqUploadVer onFailure")
+            }
+
+        })
     }
 
     private fun reqContentVersion() {

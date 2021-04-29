@@ -7,7 +7,7 @@ package com.chan9u.model
  *  last 20.11.22
  */
 object K {
-    const val BaseUrl: String = "http://svntest.lineheart.kr"
+    const val BaseUrl: String = "http://uuntact.com"
 
     object test{
         var testUrl = "testtest"
