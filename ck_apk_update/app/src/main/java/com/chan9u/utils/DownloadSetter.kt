@@ -33,7 +33,7 @@ fun download(setter: DownloadSetter.() -> Unit) = DownloadSetter().run {
                 .setTitle(title ?: "${it.name}을(를) 다운로드 합니다.")
 //                    .setDescription("Downloading...")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalPublicDir("", it.name)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, it.name)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
 //                    .addRequestHeader("", "")

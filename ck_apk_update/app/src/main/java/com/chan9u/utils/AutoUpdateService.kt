@@ -17,10 +17,7 @@ import androidx.core.app.NotificationCompat
 import com.blankj.utilcode.util.AppUtils
 import com.chan9u.R
 import com.chan9u.activity.MainActivity
-import com.chan9u.model.BasicApi
-import com.chan9u.model.DownloadFile
-import com.chan9u.model.K
-import com.chan9u.model.VersionDto
+import com.chan9u.model.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
@@ -32,6 +29,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.BufferedInputStream
 import java.io.File
 import java.nio.charset.Charset
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.zip.ZipFile
 
@@ -50,6 +48,7 @@ class AutoUpdateService: Service() {
     private lateinit var retrofitService: BasicApi
 
     private val zipFileNm = "contents.zip"
+    private var downloadUrl = ""
 
     // version
     private var verContents: Int = 0
@@ -75,15 +74,14 @@ class AutoUpdateService: Service() {
         try {
             Log.d("@@@@@@@", "onStartCommand")
 
-            reqUploadVer()
-
-//            val task = object :TimerTask(){
-//                override fun run() {
+            val task = object :TimerTask(){
+                override fun run() {
 //                    reqContentVersion()
-//                }
-//            }
-//
-//            Timer().schedule(task, 9000, sleepMillis)
+                    reqUploadVer()
+                }
+            }
+
+            Timer().schedule(task, 3000, sleepMillis)
 
             // 21.04.27 chan test
 //            download {
@@ -91,7 +89,7 @@ class AutoUpdateService: Service() {
 //                downloads = listOf(
 //                    DownloadFile(
 //                        zipFileNm,
-//                        "https://www.dropbox.com/s/cx6af2x3rsfbc4a/contents.zip?dl=1"
+//                        "https://www.dropbox.com/s/futi6fbg02eggbr/contents.zip?dl=1"
 //                    )
 //                )
 //            }
@@ -104,7 +102,12 @@ class AutoUpdateService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(downloadReceiver())
+        try {
+            unregisterReceiver(downloadReceiver())
+        } catch (e: Exception) {
+
+        }
+
         Log.d("@@@@@@@", "onDestroy ")
     }
 
@@ -174,7 +177,7 @@ class AutoUpdateService: Service() {
         }
         // remove zip file
         File(
-                "${Environment.getExternalStorageDirectory().absolutePath}${File.separator}${zipFileNm}"
+                "${Environment.DIRECTORY_DOWNLOADS}${File.separator}${zipFileNm}"
         ).delete()
         // TODO chan 21.04.27 apk 업데이트는 이후에 작업
 //        reqApkVersion()
@@ -187,10 +190,10 @@ class AutoUpdateService: Service() {
             Log.d("@@@@@@@@@", "downloadReceiver() >> ")
             try {
                 val zipFile = File(
-                        "${Environment.getExternalStorageDirectory().absolutePath}${File.separator}${zipFileNm}"
+                        "${Environment.DIRECTORY_DOWNLOADS}${File.separator}${zipFileNm}"
                 )
                 unZip(
-                        zipFile, "${Environment.getExternalStorageDirectory().absolutePath}"
+                        zipFile, "${Environment.DIRECTORY_DOWNLOADS}"
                 )
             } catch (e: Exception) {
                 Log.d("@@@@@@@@@", e.message)
@@ -267,16 +270,82 @@ class AutoUpdateService: Service() {
         out.close()
     }
 
+    /**
+     * 스마트홈 업데이트 정보 가져오기
+     */
     private fun reqUploadVer() {
         setRetrofit()
-        retrofitService.reqUploadInfo().enqueue(object : Callback<JsonObject> {
+        retrofitService.reqUploadInfo(hawk(K.hawk.poscode, "")).enqueue(object : Callback<SendUploadInfo> {
 
-            override fun onResponse(call: Call<JsonObject>, response: Response<JsonObject>) {
+            override fun onResponse(call: Call<SendUploadInfo>, response: Response<SendUploadInfo>) {
                 Log.d("@@@@@@@@ ", "reqUploadVer onResponse >> ${response.body()}")
+                try {
+                    if (response.isSuccessful) {
+                        downloadUrl = response.body()?.url ?: ""
+                        verContents = hawk(K.hawk.contents_version, 0)
+
+                        val serverVersion: Int =
+                            response.body()?.updatever?.let { Integer.parseInt(it) } ?: 0
+
+//                        if (verContents < serverVersion) {
+                        if (true) {
+                            response.body()?.updatever?.let {
+                                Integer.parseInt(it).save(K.hawk.contents_version)
+                            }
+                            response.body()?.periodic?.let {
+                                it.save(K.hawk.periodic)
+                            }
+
+                            download {
+                                context = this@AutoUpdateService
+                                downloads = listOf(
+                                    DownloadFile(
+                                        zipFileNm,
+                                        downloadUrl
+                                    )
+                                )
+                            }
+
+                            sendUploadVer(10, response.body()?.periodic ?: "")
+                        }
+
+                    } else {
+                        sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
+                    }
+                } catch (e: Exception) {
+                    Log.d("@@@@@@@@@@@", "reqUploadVer >> ${e.message}")
+                }
             }
 
-            override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+            override fun onFailure(call: Call<SendUploadInfo>, t: Throwable) {
                 Log.d("@@@@@@@@ ", "reqUploadVer onFailure")
+                sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
+            }
+
+        })
+    }
+
+    /**
+     * 스마트홈 업데이트 결과 전송
+     */
+    private fun sendUploadVer(result: Int, periodic: String) {
+        Log.d("@@@@@@@@ ", "sendUploadVer >> ")
+        setRetrofit()
+        retrofitService.sendUploadInfo(
+            getTime(),
+            hawk(K.hawk.contents_version, 0).toString(),
+            hawk(K.hawk.poscode, "").toString(),
+            hawk(K.hawk.posname, "").toString(),
+            result,
+            periodic
+        ).enqueue(object : Callback<JsonObject> {
+            override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                Log.d("@@@@@@@@ ", "sendUploadVer onFailure")
+            }
+
+            override fun onResponse(call: Call<JsonObject>, response: Response<JsonObject>) {
+                Log.d("@@@@@@@@ ", "sendUploadVer onResponse >> ${response.isSuccessful()}")
+                Log.d("@@@@@@@@ ", "sendUploadVer onResponse >> ${response.body()}")
             }
 
         })
@@ -343,6 +412,19 @@ class AutoUpdateService: Service() {
                 }
             }
         })
+    }
+
+    private fun getTime(): String {
+        var stringTime = ""
+        try {
+            val now: Long = System.currentTimeMillis()
+            val date = Date(now)
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
+            stringTime = dateFormat.format(date)
+        } catch (e: java.lang.Exception) {
+            Log.d("OkHttpWebSocket ", "@@@@ time error ${e.message}")
+        }
+        return stringTime
     }
 
 }

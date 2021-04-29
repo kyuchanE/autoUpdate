@@ -16,5 +16,9 @@ object K {
     object hawk {
         const val contents_version = "contents_version"
         const val apk_version = "apk_version"
+
+        const val poscode = "poscode"
+        const val posname = "posname"
+        const val periodic = "periodic"
     }
 }

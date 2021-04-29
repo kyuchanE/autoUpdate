@@ -3,6 +3,7 @@ package com.chan9u.base
 import android.app.Application
 import com.chan9u.model.K
 import com.chan9u.utils.flash
+import com.chan9u.utils.hawk
 import com.chan9u.utils.isNull
 import com.chan9u.utils.save
 import com.facebook.stetho.Stetho
@@ -22,12 +23,8 @@ class BaseApplication: Application() {
         Stetho.initializeWithDefaults(this)
         // hawk init
         Hawk.init(this).build()
-
-        // 버전 정보 없을시 초기값 세팅
-        if (Hawk.get<String>(K.hawk.contents_version).isNull &&
-                Hawk.get<String>(K.hawk.apk_version).isNull){
-            10000.save(K.hawk.contents_version)
-            20002.save(K.hawk.apk_version)
+        if (hawk(K.hawk.periodic, "").isNullOrEmpty()) {
+            "".save(K.hawk.periodic)
         }
 
     }

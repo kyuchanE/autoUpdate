@@ -11,6 +11,7 @@ import android.os.Environment
 import android.provider.Settings
 import android.util.Log
 import android.view.ViewTreeObserver
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,6 +33,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.*
+import java.lang.Exception
 import java.nio.charset.Charset
 import java.util.zip.ZipFile
 
@@ -45,6 +47,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     private val REQ_CODE_PERMISSION = 777
 
     override val layoutId: Int = R.layout.activity_main
+
+    private var ver: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +70,15 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override fun onResume() {
         super.onResume()
 
+        ver = hawk(K.hawk.contents_version, 0)
+        binding.tvVer.text = "version -> ${ver}"
+
+        val code: String = hawk(K.hawk.poscode, "")
+        binding.tvCode.text = "poscode -> $code"
+
+        val name: String = hawk(K.hawk.posname, "")
+        binding.tvName.text = "posname -> $name"
+
     }
 
     override fun onDestroy() {
@@ -86,12 +99,41 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
 
         binding.btnStart.setOnClickListener {
-            startUpdate()
+            val code: String = hawk(K.hawk.poscode, "")
+            val name: String = hawk(K.hawk.posname, "")
+
+            if (code.isNotEmpty() && name.isNotEmpty()) {
+                startUpdate()
+            } else {
+                Toast.makeText(this, "poscode, posname 값을 확인해 주세요!!", Toast.LENGTH_LONG).show()
+            }
+
         }
 
-        binding.btnReset.setOnClickListener {
-            10000.save(K.hawk.contents_version)
-            20002.save(K.hawk.apk_version)
+        binding.btnSave.setOnClickListener {
+
+            if (!binding.etCode.text.isNullOrEmpty()) {
+                var code: String = binding.etCode.text.toString()
+                code.save(K.hawk.poscode)
+                binding.tvCode.text = "poscode -> $code"
+                binding.etCode.setText("")
+            }
+
+            if (!binding.etName.text.isNullOrEmpty()) {
+                var name: String = binding.etName.text.toString()
+                name.save(K.hawk.posname)
+                binding.tvName.text = "posname -> $name"
+                binding.etName.setText("")
+            }
+        }
+
+        binding.btnStop.setOnClickListener {
+            try {
+                stopService(Intent(this, AutoUpdateService::class.java))
+            } catch (e: Exception) {
+                Log.d("@@@@@@@@@", "btnStop >> ${e.message}")
+            }
+
         }
 
     }

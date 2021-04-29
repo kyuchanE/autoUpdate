@@ -15,9 +15,18 @@ interface BasicApi {
 
     // 컨텐츠 버전 체크
     @GET("/UploadApi/sendServiceUploadInfo")
-    fun reqUploadInfo(): Call<JsonObject>
+    fun reqUploadInfo(
+        @Query("poscode") poscode: String
+    ): Call<SendUploadInfo>
 
-    // 컨텐츠 버전 체크
+    // 컨텐츠 업데이트 결과
     @GET("/UploadApi/getServiceUploadInfo")
-    fun sendUploadInfo(): Call<JsonObject>
+    fun sendUploadInfo(
+        @Query("updatedatetime") updatedatetime: String ,
+        @Query("updatever") updatever: String ,
+        @Query("poscode") poscode: String ,
+        @Query("posname") posname: String ,
+        @Query("updateresult") updateresult: Int ,      // 성공 10, 실패 11
+        @Query("periodic") periodic: String
+    ): Call<JsonObject>
 }
