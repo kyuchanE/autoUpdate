@@ -8,6 +8,7 @@ package com.chan9u.model
  */
 object K {
     const val BaseUrl: String = "http://uuntact.com"
+    var isLoop: Boolean = true
 
     object test{
         var testUrl = "testtest"

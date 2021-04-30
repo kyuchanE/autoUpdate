@@ -54,6 +54,10 @@ class AutoUpdateService: Service() {
     private var verContents: Int = 0
     private var verApk: Int = 0
 
+    private var currentVer: Int = 0
+
+    private var timerTask: TimerTask? = null
+
     override fun onBind(intent: Intent?): IBinder? {
         throw UnsupportedOperationException("Not yet implemented")
     }
@@ -73,15 +77,15 @@ class AutoUpdateService: Service() {
         serviceIntent = intent
         try {
             Log.d("@@@@@@@", "onStartCommand")
-
-            val task = object :TimerTask(){
+            timerTask?.cancel()
+            timerTask = object :TimerTask(){
                 override fun run() {
 //                    reqContentVersion()
                     reqUploadVer()
+//                    Log.d("@@@@@@@", "onStartCommand run@@@@@@@@@@@@@@@@")
                 }
             }
-
-            Timer().schedule(task, 3000, sleepMillis)
+            Timer().schedule(timerTask!!, 3000, sleepMillis)
 
             // 21.04.27 chan test
 //            download {
@@ -102,8 +106,13 @@ class AutoUpdateService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+
         try {
-            unregisterReceiver(downloadReceiver())
+            if (K.isLoop) {
+                unregisterReceiver(downloadReceiver())
+            } else {
+                timerTask?.cancel()
+            }
         } catch (e: Exception) {
 
         }
@@ -177,7 +186,7 @@ class AutoUpdateService: Service() {
         }
         // remove zip file
         File(
-                "${Environment.DIRECTORY_DOWNLOADS}${File.separator}${zipFileNm}"
+                "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
         ).delete()
         // TODO chan 21.04.27 apk 업데이트는 이후에 작업
 //        reqApkVersion()
@@ -190,15 +199,18 @@ class AutoUpdateService: Service() {
             Log.d("@@@@@@@@@", "downloadReceiver() >> ")
             try {
                 val zipFile = File(
-                        "${Environment.DIRECTORY_DOWNLOADS}${File.separator}${zipFileNm}"
+                        "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
                 )
                 unZip(
-                        zipFile, "${Environment.DIRECTORY_DOWNLOADS}"
+                        zipFile, "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}"
                 )
+                currentVer.save(K.hawk.contents_version)
             } catch (e: Exception) {
-                Log.d("@@@@@@@@@", e.message)
+                Log.d("@@@@@@@ downReceive ", e.message)
+                sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
             }
         }
+
     }
 
     // adb install
@@ -287,10 +299,10 @@ class AutoUpdateService: Service() {
                         val serverVersion: Int =
                             response.body()?.updatever?.let { Integer.parseInt(it) } ?: 0
 
-//                        if (verContents < serverVersion) {
-                        if (true) {
+                        if (verContents < serverVersion) {
+//                        if (true) {
                             response.body()?.updatever?.let {
-                                Integer.parseInt(it).save(K.hawk.contents_version)
+                                currentVer = Integer.parseInt(it)
                             }
                             response.body()?.periodic?.let {
                                 it.save(K.hawk.periodic)
@@ -327,6 +339,7 @@ class AutoUpdateService: Service() {
 
     /**
      * 스마트홈 업데이트 결과 전송
+     *  result 성공 10, 실패 11
      */
     private fun sendUploadVer(result: Int, periodic: String) {
         Log.d("@@@@@@@@ ", "sendUploadVer >> ")

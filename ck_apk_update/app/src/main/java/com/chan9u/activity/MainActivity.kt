@@ -63,7 +63,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 //                    dialog("필수 권한이 없어 앱을 종료합니다.").right { finish() }
                 }
         )
-
         initViews()
     }
 
@@ -99,6 +98,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
 
         binding.btnStart.setOnClickListener {
+            K.isLoop = true
             val code: String = hawk(K.hawk.poscode, "")
             val name: String = hawk(K.hawk.posname, "")
 
@@ -129,6 +129,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         binding.btnStop.setOnClickListener {
             try {
+                K.isLoop = false
                 stopService(Intent(this, AutoUpdateService::class.java))
             } catch (e: Exception) {
                 Log.d("@@@@@@@@@", "btnStop >> ${e.message}")
