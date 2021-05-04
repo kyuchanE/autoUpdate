@@ -137,6 +137,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         }
 
+        binding.ivVer.setOnClickListener {
+            ver = hawk(K.hawk.contents_version, 0)
+            binding.tvVer.text = "version -> ${ver}"
+        }
+
     }
 
     @JvmOverloads

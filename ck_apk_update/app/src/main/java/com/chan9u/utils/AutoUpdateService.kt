@@ -188,6 +188,8 @@ class AutoUpdateService: Service() {
         File(
                 "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
         ).delete()
+
+        sendUploadVer(10, hawk(K.hawk.periodic, "").toString())
         // TODO chan 21.04.27 apk 업데이트는 이후에 작업
 //        reqApkVersion()
     }
@@ -206,7 +208,7 @@ class AutoUpdateService: Service() {
                 )
                 currentVer.save(K.hawk.contents_version)
             } catch (e: Exception) {
-                Log.d("@@@@@@@ downReceive ", e.message)
+                Log.d("@@@@@@ ", "downloadReceiver >> ${e.message}")
                 sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
             }
         }
@@ -317,11 +319,10 @@ class AutoUpdateService: Service() {
                                     )
                                 )
                             }
-
-                            sendUploadVer(10, response.body()?.periodic ?: "")
                         }
 
                     } else {
+                        Log.d("@@@@@@@@ ", "reqUploadVer else")
                         sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
                     }
                 } catch (e: Exception) {
