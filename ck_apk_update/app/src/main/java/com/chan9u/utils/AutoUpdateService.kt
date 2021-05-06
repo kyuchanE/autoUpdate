@@ -199,6 +199,7 @@ class AutoUpdateService: Service() {
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d("@@@@@@@@@", "downloadReceiver() >> ")
+            // TODO chan before 파일에 이전버전 임시 저장 후 압축 해제 실패시 다시 가져오기 로직 추가 필요 (압축 해제 전 contents 파일 제거(이동), 해제 실패시 예외 처리, 해제 성공시 before 파일 삭제)
             try {
                 val zipFile = File(
                         "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"

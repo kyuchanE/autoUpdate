@@ -49,6 +49,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override val layoutId: Int = R.layout.activity_main
 
     private var ver: Int = 0
+    lateinit var fileChild: Array<File>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,6 +143,38 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             binding.tvVer.text = "version -> ${ver}"
         }
 
+        binding.btnDelete.setOnClickListener {
+            setDirEmpty("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}contents")
+        }
+
+        binding.btnMove.setOnClickListener {
+            val dir = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}test")
+            if (!dir.exists()) {
+                dir.mkdir()
+            } else {
+                dir.renameTo(
+                        File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}before${File.separator}test")
+                )
+            }
+        }
+
+    }
+
+    fun setDirEmpty(dirNm: String) {
+        val file = File(dirNm)
+        if (file.exists()) {
+            fileChild = file.listFiles()
+            Log.d("@@@@@@@@@", "btnDelete >> ")
+            for (child: File in fileChild) {
+                if (child.isDirectory) {
+                    setDirEmpty(child.absolutePath)
+                } else {
+                    child.delete()
+                }
+            }
+            file.delete()
+
+        }
     }
 
     @JvmOverloads
