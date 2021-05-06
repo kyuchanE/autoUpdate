@@ -195,7 +195,7 @@ class AutoUpdateService: Service() {
     }
 
     // downloadReceiver
-    private fun downloadReceiver(): BroadcastReceiver = object: BroadcastReceiver(){
+    private fun downloadReceiver(): BroadcastReceiver = object : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d("@@@@@@@@@", "downloadReceiver() >> ")
@@ -206,6 +206,13 @@ class AutoUpdateService: Service() {
                 unZip(
                         zipFile, "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}"
                 )
+
+                // 예외적인 상황으로 압축파일이 삭제안되고 존재하는 경우
+                if (zipFile.exists()) {
+                    // remove zip file
+                    Log.d("@@@@@@@@", "download remove zip file >>> ")
+                    zipFile.delete()
+                }
                 currentVer.save(K.hawk.contents_version)
             } catch (e: Exception) {
                 Log.d("@@@@@@ ", "downloadReceiver >> ${e.message}")
