@@ -57,6 +57,7 @@ class AutoUpdateService: Service() {
     private var currentVer: Int = 0
 
     private var timerTask: TimerTask? = null
+    lateinit var fileChild: Array<File>
 
     override fun onBind(intent: Intent?): IBinder? {
         throw UnsupportedOperationException("Not yet implemented")
@@ -169,29 +170,50 @@ class AutoUpdateService: Service() {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun unZip(zipFile: File, targetPath: String) {
-        val zip = ZipFile(zipFile, Charset.forName("euc-kr"))
-        val enumeration = zip.entries()
-        while (enumeration.hasMoreElements()) {
-            val entry = enumeration.nextElement()
-            val destFilePath = File(targetPath, entry.name)
-            destFilePath.parentFile.mkdirs()
-            if (entry.isDirectory)
-                continue
-            val bufferedIs = BufferedInputStream(zip.getInputStream(entry))
-            bufferedIs.use {
-                destFilePath.outputStream().buffered(1024).use { bos ->
-                    bufferedIs.copyTo(bos)
+        try {
+            val zip = ZipFile(zipFile, Charset.forName("euc-kr"))
+            val enumeration = zip.entries()
+            while (enumeration.hasMoreElements()) {
+                val entry = enumeration.nextElement()
+                val destFilePath = File(targetPath, entry.name)
+                destFilePath.parentFile.mkdirs()
+                if (entry.isDirectory)
+                    continue
+                val bufferedIs = BufferedInputStream(zip.getInputStream(entry))
+                bufferedIs.use {
+                    destFilePath.outputStream().buffered(1024).use { bos ->
+                        bufferedIs.copyTo(bos)
+                    }
                 }
             }
-        }
-        // remove zip file
-        File(
-                "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
-        ).delete()
 
-        sendUploadVer(10, hawk(K.hawk.periodic, "").toString())
-        // TODO chan 21.04.27 apk 업데이트는 이후에 작업
+            // remove zip file
+            zipFile.delete()
+
+            // TODO chan 21.04.27 apk 업데이트는 이후에 작업
 //        reqApkVersion()
+
+        } catch (e: Exception) {
+            Log.d("@@@@@@ ", "unZip >> ${e.message}")
+        }
+
+    }
+
+    // 디렉토리 모든 파일 삭제
+    fun setDirEmpty(dirNm: String) {
+        val file = File(dirNm)
+        if (file.exists()) {
+            fileChild = file.listFiles()
+            Log.d("@@@@@@@@@", "btnDelete >> ")
+            for (child: File in fileChild) {
+                if (child.isDirectory) {
+                    setDirEmpty(child.absolutePath)
+                } else {
+                    child.delete()
+                }
+            }
+            file.delete()
+        }
     }
 
     // downloadReceiver
@@ -199,26 +221,52 @@ class AutoUpdateService: Service() {
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d("@@@@@@@@@", "downloadReceiver() >> ")
-            // TODO chan before 파일에 이전버전 임시 저장 후 압축 해제 실패시 다시 가져오기 로직 추가 필요 (압축 해제 전 contents 파일 제거(이동), 해제 실패시 예외 처리, 해제 성공시 before 파일 삭제)
-            try {
-                val zipFile = File(
-                        "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
-                )
-                unZip(
-                        zipFile, "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}"
-                )
-
-                // 예외적인 상황으로 압축파일이 삭제안되고 존재하는 경우
-                if (zipFile.exists()) {
-                    // remove zip file
-                    Log.d("@@@@@@@@", "download remove zip file >>> ")
-                    zipFile.delete()
-                }
-                currentVer.save(K.hawk.contents_version)
-            } catch (e: Exception) {
-                Log.d("@@@@@@ ", "downloadReceiver >> ${e.message}")
-                sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
+            // 다운로드 완료
+            val dirBefore = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}before")
+            if (!dirBefore.exists()) {
+                dirBefore.mkdir()
             }
+            val beforeContents = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}contents")
+            if (beforeContents.exists()) {
+                beforeContents.renameTo(
+                        File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}before${File.separator}contents")
+                )
+            }
+
+            val zipFile = File(
+                    "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}${zipFileNm}"
+            )
+            unZip(
+                    zipFile,
+                    "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}"
+            )
+
+            if (zipFile.exists()) {
+                // 예외적인 상황으로 압축해제 실패
+                val contents = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}contents")
+                if (contents.exists()) {
+                    setDirEmpty("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}contents")
+                }
+                val returnFile = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}before${File.separator}contents")
+                if (returnFile.exists()) {
+                    returnFile.renameTo(
+                            File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}contents")
+                    )
+                }
+
+                // remove zip file
+                zipFile.delete()
+                sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
+            } else {
+                // 압축해제 성공
+                if (dirBefore.exists()) {
+                    setDirEmpty("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}before")
+                }
+
+                sendUploadVer(10, hawk(K.hawk.periodic, "").toString())
+                currentVer.save(K.hawk.contents_version)
+            }
+
         }
 
     }
