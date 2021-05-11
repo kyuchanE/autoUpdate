@@ -79,6 +79,15 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val name: String = hawk(K.hawk.posname, "")
         binding.tvName.text = "posname -> $name"
 
+        // TODO chan 21.05.11
+//        val isSuccess = intent.getStringExtra("success") ?: ""
+//        if (isSuccess.equals("success", false)) {
+//            val url = "lguplus://smarthome?path=test"
+//            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//            startActivity(intent)
+//        }
+
     }
 
     override fun onDestroy() {
@@ -143,38 +152,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             binding.tvVer.text = "version -> ${ver}"
         }
 
-        binding.btnDelete.setOnClickListener {
-            setDirEmpty("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}contents")
-        }
 
-        binding.btnMove.setOnClickListener {
-            val dir = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}test")
-            if (!dir.exists()) {
-                dir.mkdir()
-            } else {
-                dir.renameTo(
-                        File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}before${File.separator}test")
-                )
-            }
-        }
-
-    }
-
-    fun setDirEmpty(dirNm: String) {
-        val file = File(dirNm)
-        if (file.exists()) {
-            fileChild = file.listFiles()
-            Log.d("@@@@@@@@@", "btnDelete >> ")
-            for (child: File in fileChild) {
-                if (child.isDirectory) {
-                    setDirEmpty(child.absolutePath)
-                } else {
-                    child.delete()
-                }
-            }
-            file.delete()
-
-        }
     }
 
     @JvmOverloads

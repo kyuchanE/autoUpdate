@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Environment
@@ -53,6 +54,8 @@ class AutoUpdateService: Service() {
     // version
     private var verContents: Int = 0
     private var verApk: Int = 0
+
+    private var isFinishUnZip: Boolean = false
 
     private var currentVer: Int = 0
 
@@ -171,6 +174,7 @@ class AutoUpdateService: Service() {
     @RequiresApi(Build.VERSION_CODES.N)
     private fun unZip(zipFile: File, targetPath: String) {
         try {
+            isFinishUnZip = false
             val zip = ZipFile(zipFile, Charset.forName("euc-kr"))
             val enumeration = zip.entries()
             while (enumeration.hasMoreElements()) {
@@ -189,12 +193,13 @@ class AutoUpdateService: Service() {
 
             // remove zip file
             zipFile.delete()
-
+            isFinishUnZip = true
             // TODO chan 21.04.27 apk 업데이트는 이후에 작업
 //        reqApkVersion()
 
         } catch (e: Exception) {
             Log.d("@@@@@@ ", "unZip >> ${e.message}")
+            isFinishUnZip = false
         }
 
     }
@@ -241,7 +246,7 @@ class AutoUpdateService: Service() {
                     "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}"
             )
 
-            if (zipFile.exists()) {
+            if (zipFile.exists() || !isFinishUnZip) {
                 // 예외적인 상황으로 압축해제 실패
                 val contents = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}contents")
                 if (contents.exists()) {
@@ -265,6 +270,12 @@ class AutoUpdateService: Service() {
 
                 sendUploadVer(10, hawk(K.hawk.periodic, "").toString())
                 currentVer.save(K.hawk.contents_version)
+
+                // TODO chan 21.05.11
+//                val intent = Intent(applicationContext, MainActivity::class.java)
+//                intent.putExtra("success", "success")
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//                startActivity(intent)
             }
 
         }

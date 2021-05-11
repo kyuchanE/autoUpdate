@@ -131,18 +131,6 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btn_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="delete"/>
-
-        <Button
-            android:id="@+id/btn_move"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="move"/>
-
 
     </LinearLayout>
 </layout>
