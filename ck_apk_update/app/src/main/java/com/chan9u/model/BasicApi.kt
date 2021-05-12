@@ -26,7 +26,7 @@ interface BasicApi {
         @Query("updatever") updatever: String ,
         @Query("poscode") poscode: String ,
         @Query("posname") posname: String ,
-        @Query("updateresult") updateresult: Int ,      // 성공 10, 실패 11
+        @Query("updateresult") updateresult: Int ,      // 성공 10, 실패 11, 통신오류 13, 버전중복 14
         @Query("periodic") periodic: String
     ): Call<JsonObject>
 }

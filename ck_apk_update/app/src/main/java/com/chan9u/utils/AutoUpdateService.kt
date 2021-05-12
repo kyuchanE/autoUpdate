@@ -53,6 +53,7 @@ class AutoUpdateService: Service() {
 
     // version
     private var verContents: Int = 0
+    private var verServer: Int = 0
     private var verApk: Int = 0
 
     private var isFinishUnZip: Boolean = false
@@ -61,6 +62,7 @@ class AutoUpdateService: Service() {
 
     private var timerTask: TimerTask? = null
     lateinit var fileChild: Array<File>
+
 
     override fun onBind(intent: Intent?): IBinder? {
         throw UnsupportedOperationException("Not yet implemented")
@@ -261,15 +263,15 @@ class AutoUpdateService: Service() {
 
                 // remove zip file
                 zipFile.delete()
-                sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
+                sendUploadVer(11, hawk(K.hawk.periodic, "").toString(), currentVer.toString())
             } else {
                 // 압축해제 성공
                 if (dirBefore.exists()) {
                     setDirEmpty("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path}${File.separator}before")
                 }
 
-                sendUploadVer(10, hawk(K.hawk.periodic, "").toString())
                 currentVer.save(K.hawk.contents_version)
+                sendUploadVer(10, hawk(K.hawk.periodic, "").toString(), hawk(K.hawk.contents_version, 0).toString())
 
                 // TODO chan 21.05.11
 //                val intent = Intent(applicationContext, MainActivity::class.java)
@@ -365,11 +367,9 @@ class AutoUpdateService: Service() {
                         downloadUrl = response.body()?.url ?: ""
                         verContents = hawk(K.hawk.contents_version, 0)
 
-                        val serverVersion: Int =
-                            response.body()?.updatever?.let { Integer.parseInt(it) } ?: 0
+                        verServer = response.body()?.updatever?.let { Integer.parseInt(it) } ?: 0
 
-                        if (verContents < serverVersion) {
-//                        if (true) {
+                        if (verContents < verServer) {
                             response.body()?.updatever?.let {
                                 currentVer = Integer.parseInt(it)
                             }
@@ -380,17 +380,19 @@ class AutoUpdateService: Service() {
                             download {
                                 context = this@AutoUpdateService
                                 downloads = listOf(
-                                    DownloadFile(
-                                        zipFileNm,
-                                        downloadUrl
-                                    )
+                                        DownloadFile(
+                                                zipFileNm,
+                                                downloadUrl
+                                        )
                                 )
                             }
+                        } else {
+                            sendUploadVer(14, hawk(K.hawk.periodic, "").toString(), verServer.toString())
                         }
 
                     } else {
                         Log.d("@@@@@@@@ ", "reqUploadVer else")
-                        sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
+                        sendUploadVer(13, hawk(K.hawk.periodic, "").toString(), hawk(K.hawk.contents_version, 0).toString())
                     }
                 } catch (e: Exception) {
                     Log.d("@@@@@@@@@@@", "reqUploadVer >> ${e.message}")
@@ -399,7 +401,7 @@ class AutoUpdateService: Service() {
 
             override fun onFailure(call: Call<SendUploadInfo>, t: Throwable) {
                 Log.d("@@@@@@@@ ", "reqUploadVer onFailure")
-                sendUploadVer(11, hawk(K.hawk.periodic, "").toString())
+                sendUploadVer(13, hawk(K.hawk.periodic, "").toString(), hawk(K.hawk.contents_version, 0).toString())
             }
 
         })
@@ -407,18 +409,18 @@ class AutoUpdateService: Service() {
 
     /**
      * 스마트홈 업데이트 결과 전송
-     *  result 성공 10, 실패 11
+     *  result 성공 10, 실패 11, 13: 통시오류, 14 버전중복
      */
-    private fun sendUploadVer(result: Int, periodic: String) {
+    private fun sendUploadVer(result: Int, periodic: String, version: String) {
         Log.d("@@@@@@@@ ", "sendUploadVer >> ")
         setRetrofit()
         retrofitService.sendUploadInfo(
-            getTime(),
-            hawk(K.hawk.contents_version, 0).toString(),
-            hawk(K.hawk.poscode, "").toString(),
-            hawk(K.hawk.posname, "").toString(),
-            result,
-            periodic
+                getTime(),
+                version,
+                hawk(K.hawk.poscode, "").toString(),
+                hawk(K.hawk.posname, "").toString(),
+                result,
+                periodic
         ).enqueue(object : Callback<JsonObject> {
             override fun onFailure(call: Call<JsonObject>, t: Throwable) {
                 Log.d("@@@@@@@@ ", "sendUploadVer onFailure")
