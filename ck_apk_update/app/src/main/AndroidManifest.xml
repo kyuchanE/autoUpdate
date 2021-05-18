@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 <!--    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"/>-->
 
     <application
@@ -53,6 +54,12 @@
             android:enabled="true"
             android:exported="true">
 
+        </receiver>
+        <!-- 디바이스 부팅시 앱 재실행 -->
+        <receiver android:name=".utils.StartReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
         </receiver>
     </application>
 
