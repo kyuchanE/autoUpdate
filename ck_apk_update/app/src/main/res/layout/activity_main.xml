@@ -3,7 +3,7 @@
     <data>
         <variable
             name="activity"
-            type="com.chan9u.activity.MainActivity" />
+            type="com.uplusupdate.activity.MainActivity" />
     </data>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"

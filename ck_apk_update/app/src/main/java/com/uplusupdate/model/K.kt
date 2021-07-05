@@ -1,4 +1,4 @@
-package com.chan9u.model
+package com.uplusupdate.model
 
 
 /**

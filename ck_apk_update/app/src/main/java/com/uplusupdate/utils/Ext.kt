@@ -1,4 +1,4 @@
-package com.chan9u.utils
+package com.uplusupdate.utils
 
 import android.util.Log
 import com.orhanobut.hawk.Hawk

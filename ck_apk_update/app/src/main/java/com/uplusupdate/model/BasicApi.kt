@@ -1,4 +1,4 @@
-package com.chan9u.model
+package com.uplusupdate.model
 
 import com.google.gson.JsonObject
 import retrofit2.Call

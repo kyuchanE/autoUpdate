@@ -1,4 +1,4 @@
-package com.chan9u.model
+package com.uplusupdate.model
 
 data class SendUploadInfo(
         val updatever: String,

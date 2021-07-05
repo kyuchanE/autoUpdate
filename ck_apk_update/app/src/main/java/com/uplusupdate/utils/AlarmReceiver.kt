@@ -1,4 +1,4 @@
-package com.chan9u.utils
+package com.uplusupdate.utils
 
 import android.content.BroadcastReceiver
 import android.content.Context

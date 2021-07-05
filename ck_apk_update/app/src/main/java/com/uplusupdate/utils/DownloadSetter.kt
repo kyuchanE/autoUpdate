@@ -1,13 +1,10 @@
-package com.chan9u.utils
+package com.uplusupdate.utils
 
 import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
 import androidx.core.net.toUri
-import com.chan9u.model.DownloadFile
-import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.uplusupdate.model.DownloadFile
 
 /**
  * 다운로드 요청 파라미터 세터

@@ -1,11 +1,9 @@
-package com.chan9u.base
+package com.uplusupdate.base
 
 import android.app.Application
-import com.chan9u.model.K
-import com.chan9u.utils.flash
-import com.chan9u.utils.hawk
-import com.chan9u.utils.isNull
-import com.chan9u.utils.save
+import com.uplusupdate.model.K
+import com.uplusupdate.utils.hawk
+import com.uplusupdate.utils.save
 import com.facebook.stetho.Stetho
 import com.orhanobut.hawk.Hawk
 

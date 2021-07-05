@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chan9u">
+    package="com.uplusupdate">
     <!-- android:sharedUserId="android.uid.system" -->
 
     <!-- permission -->
@@ -21,9 +21,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ApplicationAutoUpdate"
-        android:name=".base.BaseApplication"
+        android:name="com.uplusupdate.base.BaseApplication"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activity.MainActivity">
+        <activity android:name="com.uplusupdate.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,19 +44,19 @@
         </provider>
 
         <!-- 포그라운드 서비스 -->
-        <service android:name=".utils.AutoUpdateService"
+        <service android:name="com.uplusupdate.utils.AutoUpdateService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="connectedDevice"
             android:isolatedProcess="false"/>
         <!-- 포그라운드 서비스 onTaskRemoved 시 캐치하여 다시 서비스 실행 리시버 -->
-        <receiver android:name=".utils.AlarmReceiver"
+        <receiver android:name="com.uplusupdate.utils.AlarmReceiver"
             android:enabled="true"
             android:exported="true">
 
         </receiver>
         <!-- 디바이스 부팅시 앱 재실행 -->
-        <receiver android:name=".utils.StartReceiver">
+        <receiver android:name="com.uplusupdate.utils.StartReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>

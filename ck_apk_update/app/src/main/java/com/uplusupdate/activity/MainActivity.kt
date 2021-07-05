@@ -1,41 +1,23 @@
-package com.chan9u.activity
+package com.uplusupdate.activity
 
 import android.Manifest
-import android.app.DownloadManager
 import android.content.*
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.Settings
 import android.util.Log
-import android.view.ViewTreeObserver
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.blankj.utilcode.util.AppUtils
-import com.chan9u.R
-import com.chan9u.base.BaseActivity
-import com.chan9u.databinding.ActivityMainBinding
-import com.chan9u.model.BasicApi
-import com.chan9u.model.DownloadFile
-import com.chan9u.model.K
-import com.chan9u.model.VersionDto
-import com.chan9u.utils.*
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.orhanobut.hawk.Hawk
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import com.uplusupdate.R
+import com.uplusupdate.base.BaseActivity
+import com.uplusupdate.databinding.ActivityMainBinding
+import com.uplusupdate.model.K
+import com.uplusupdate.utils.*
 import java.io.*
 import java.lang.Exception
-import java.nio.charset.Charset
-import java.util.zip.ZipFile
 
 /**
  *  MainActivity

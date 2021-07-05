@@ -1,4 +1,4 @@
-package com.chan9u.utils
+package com.uplusupdate.utils
 
 import android.app.*
 import android.content.BroadcastReceiver
@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
-import android.net.Uri
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
@@ -16,9 +14,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.blankj.utilcode.util.AppUtils
-import com.chan9u.R
-import com.chan9u.activity.MainActivity
-import com.chan9u.model.*
+import com.uplusupdate.R
+import com.uplusupdate.model.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject

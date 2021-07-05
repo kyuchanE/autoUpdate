@@ -7,7 +7,7 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        applicationId "com.chan9u"
+        applicationId "com.uplusupdate"
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 1

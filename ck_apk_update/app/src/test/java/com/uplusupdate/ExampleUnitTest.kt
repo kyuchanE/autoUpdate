@@ -1,4 +1,4 @@
-package com.chan9u
+package com.uplusupdate
 
 import org.junit.Test
 
